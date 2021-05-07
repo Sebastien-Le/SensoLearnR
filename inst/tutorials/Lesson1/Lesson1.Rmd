@@ -1,0 +1,345 @@
+---
+title: "Analysing QDA data with R"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(dplyr)
+library(xlsx)
+library(SensoMineR)
+library(ggplot2)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# How to describe a set of products
+
+## Introduction
+
+****
+
+The main objective of this tutorial is to allow you to manipulate some R code applied to the analysis of sensory data.
+
+In this tutorial, you will experience what could be called a controlled environment. In this environment, we hope that you will be able to learn R and the analysis of sensory data without too many problems. 
+
+You will be asked (1) to answer to all the questions of this tutorial, (2) to save the code that you will generate, and of course (3) to comment this code, just in case you would forget what it means in a couple of days.
+
+Don't hesitate to use the hint button, it should give you suggestions in order to answer the questions more easily.
+
+## The chocolates data
+
+****
+
+The data used here refer to six varieties of chocolates sold in France.
+
+- For the sensory description: each chocolate was evaluated twice by 29 panellists according to 14 sensory descriptors;
+
+- For the hedonic data: each chocolate was evaluated on a structured scale from 0 to 10, by 222 consumers, according to their liking (0) or disliking (10);
+
+## Introducing the _sensochoc_ dataset
+
+****
+
+1. Please notice that for this tutorial, you are in a controlled environment and everything has been downloaded for you, the datasets and the different packages you need ; the packages have been installed as well. Remember, the first thing you have to think of, before analysing your data, is the different packages you might need. For this tutorial, we will use the _SensoMineR_ package. This package is a very useful package as it can analyse many different types of sensory data, from QDA to holistic approaches such as sorting or napping data. In a real life situation you would have to import the dataset, and to install and load the packages. To install, then load a package, you can refer to the code below.
+
+```{r q11, exercise = TRUE}
+install.packages("dplyr")
+install.packages("xlsx")
+install.packages("ggplot2")
+install.packages("SensoMineR")
+
+library(dplyr)
+library(xlsx)
+library(ggplot2)
+library(SensoMineR)
+```
+
+```{r q11-solution, echo=FALSE}
+install.packages("dplyr")
+install.packages("xlsx")
+install.packages("ggplot2")
+install.packages("SensoMineR")
+
+library(dplyr)
+library(xlsx)
+library(ggplot2)
+library(SensoMineR)
+```
+
+<div id="q11-hint">
+Before loading a package, you first have to install it. To do so, use the **install.packages** function, just like this `install.packages("name_package")`.
+
+As you can see, all you have to do to load a package is to apply the **library** function to the package, just like this `library(name_package)`.
+</div>
+
+Thanks to the code above, you can load the four packages _dplyr_, _xlsx_, _ggplot2_, and _SensoMineR_.
+
+2. Now that the _SensoMineR_ package has been installed, we're going to play with the sensory description of the chocolates. To do so, let's have a look at the _sensochoc_ dataset. Before that, we're going to load the _chocolates_ data that are included in the _SensoMineR_ package as examples. To do so, we're going to use the **data** function. Then, we're going to have a look at the first lines of the _sensochoc_ dataset, which corresponds to the sensory description of the chocolates. To do so, we're going to use the **head** function.
+
+```{r q12, exercise = TRUE}
+data(chocolates)
+head(sensochoc)
+```
+
+```{r q12-solution, echo=FALSE}
+data(chocolates)
+head(sensochoc)
+```
+
+3. The **summary** function is one of the most important function in R. For example, with the **summary** function, you can check that your dataset has been well imported. You can also display the important features of your dataset, variable per variable. This is what we're going to do.
+
+```{r q13-setup, echo=FALSE}
+data(chocolates)
+```
+
+```{r q13, exercise = TRUE}
+summary(sensochoc)
+```
+
+```{r q13-solution, echo=FALSE}
+summary(sensochoc)
+```
+
+4. Change the _maxsum_ argument of the **summary** function (to get some help, write `?summary`). As you can see, this argument indicates the number of levels to be displayed.
+
+```{r q14-setup, echo=FALSE}
+data(chocolates)
+```
+
+```{r q14, exercise = TRUE}
+
+```
+
+```{r q14-solution, echo=FALSE}
+summary(sensochoc, maxsum = 10)
+```
+
+## Analysing the _sensochoc_ dataset from a univariate point of view
+
+****
+### Manually with analysis of variance (ANOVA)
+
+1. Let's have a look at the sensory descriptor _Sweetness_. The sweetness of a chocolate can be explained by the chocolate itself, or by the person who has tasted the chocolate. These assumptions can be assessed by using an analysis of variance, a method designed to identify the sources of variability of a continuous variable. In other words, with an analysis of variance, we want to explain a continuous variable by some categorical variables (our sources of variability). In our case, the model we're going to test is the _Sweetness_ according to the _Product_ and the _Panelist_. To do so, we're going to use the **AovSum** function of the _FactoMineR_ package. All you need to specify is the model, then the name of the dataset. In the example, we store the results in an object named _res_: to do so we use that very important sign `<-`, on its left the name of the object where we want to store, on its right the results of the function. Use the **names** function to get a list of the different results produced by the **AovSum** function. Then take a look at each one of these results.
+
+```{r q21-setup, echo=FALSE}
+data(chocolates)
+```
+
+```{r q21, exercise=TRUE}
+res <- AovSum(Sweetness~Product+Panelist,data=sensochoc)
+```
+
+```{r q21-solution, echo=FALSE}
+res <- AovSum(Sweetness~Product+Panelist,data=sensochoc)
+names(res)
+```
+
+<div id="q21-hint">
+As you can see, _res_ is made up of two components. The first one is related to the variables of the model, the second one is related to the levels (or categories) of the variables of the model. You can have an access of each component by using the `$` sign: `res$name_component`.
+</div>
+
+2. Let's do the same thing with the sensory descriptor _CocoaA_.
+
+```{r q22-setup, echo=FALSE}
+data(chocolates)
+```
+
+```{r q22, exercise=TRUE}
+
+```
+
+```{r q22-solution, echo=FALSE}
+res <- AovSum(CocoaA~Product+Panelist,data=sensochoc)
+```
+
+****
+
+### Automatically with the **decat** function
+
+1. The **decat** function is one of the most important and useful function of the _SensoMineR_ package. This function is designed to point out the variables that are the most characteristic of a set of products. The idea behind this function is to perform all the analyses of variance for all the sensory descriptors, for a given model. Then the function summarises all the results that you have seen previously for a categorical variable of interest, usually the product effect. The main arguments you need to specify are the name of the dataset, the model, the position of the first sensory descriptor in your dataset. Notice that the dataset has to be structured the following way: a block of factors, then a block of sensory descriptors. Run the **decat** function on the _sensochoc_ dataset, save the results in an object named _resdecat_, identify the different components of this object with the function **names**. You can also have a look at the help page of the **decat** function, by typing `?resdecat`.
+
+
+```{r q23-setup, echo=FALSE}
+data(chocolates)
+```
+
+```{r q23, exercise=TRUE}
+resdecat <- decat(sensochoc, formul="~Product+Panelist", firstvar = 5)
+```
+
+```{r q23-solution, echo=FALSE}
+resdecat <- decat(sensochoc, formul="~Product+Panelist", firstvar = 5)
+```
+
+<div id="q23-hint">
+Notice that the dataset has to be structured the following way: a block of factors, then a block of sensory descriptors.
+</div>
+
+2. Let's have a look at the component named _tabF_.
+
+```{r q24-setup, echo=FALSE}
+data(chocolates)
+resdecat <- decat(sensochoc, formul="~Product+Panelist", firstvar = 5)
+```
+
+```{r q24, exercise=TRUE}
+resdecat$tabF
+```
+
+```{r q24-solution, echo=FALSE}
+resdecat$tabF
+```
+
+<div id="q24-hint">
+Remember to have a look at one particular component you have to write the following way: `result$name_component`.
+</div>
+
+3. Let's have a look at the component named _tabT_.
+
+```{r q25-setup, echo=FALSE}
+data(chocolates)
+resdecat <- decat(sensochoc, formul="~Product+Panelist", firstvar = 5)
+```
+
+```{r q25, exercise=TRUE}
+
+```
+
+```{r q25-solution, echo=FALSE}
+resdecat$tabT
+```
+
+<div id="q25-hint">
+Remember to have a look at one particular component you have to write the following way: `result$name_component`.
+</div>
+
+4. Let's now have a look at the component _restT_. It's a very important component as it provides an automatic description of your products.
+
+```{r q26-setup, echo=FALSE}
+data(chocolates)
+resdecat <- decat(sensochoc, formul="~Product+Panelist", firstvar = 5)
+```
+
+```{r q26, exercise=TRUE}
+
+```
+
+```{r q26-solution, echo=FALSE}
+resdecat$resT
+```
+
+<div id="q26-hint">
+Remember to have a look at one particular component you have to write the following way: `result$name_component`.
+</div>
+
+5. Finally, let's have a look at the component named _adjmean_. You will see that this component is really important to get a multivariate description of the products. Store this component in an object named _senso.average_. Run the **summary** function on this object, as well as the **rownames** and the **colnames** functions.
+
+```{r q27-setup, echo=FALSE}
+data(chocolates)
+resdecat <- decat(sensochoc, formul="~Product+Panelist", firstvar = 5)
+```
+
+```{r q27, exercise=TRUE}
+
+```
+
+```{r q27-solution, echo=FALSE}
+resdecat$adjmean
+```
+
+<div id="q27-hint">
+Remember to have a look at one particular component you have to write the following way: `result$name_component`.
+</div>
+
+## Analysing the _sensochoc_ dataset from a multivariate point of view
+
+****
+
+### With Principle Component Analysis
+
+1. Let's use the _senso.average_ dataset. For this dataset, the statistical individuals of interest are the chocolates, and the variables are the sensory descriptors. This dataset provides a multivariate description of the chocolates. This multivariate description of the chocolates can be summarised into a graphical representation of the chocolates, such as two chocolates are close if they have similar multivariate sensory descriptions. We are going to obtain this graphical representation by using a multivariate exploratory method named principal component analysis (PCA). To do so, we're going to use the **PCA** function of the _FactoMineR_ package, and we're going to apply it to the _senso.average_ dataset, then save the results in an object named _res.pca_. First, we're going to play with the numerical results, then we're going to play with the graphical results. Now, that you have run a _PCA_, please use the **summary** function on the results named _res.pca_. Then, use the **names** function on _res.pca_. You can see that _res.pca_ is made up of different results: the eigenvalues, results for the individuals, results for the variables.
+
+```{r q31, exercise=TRUE}
+res.pca <- PCA(senso.average, graph=FALSE)
+```
+
+```{r q31-solution, echo=FALSE}
+res.pca <- PCA(senso.average, graph=FALSE)
+summary(res.pca)
+names(res.pca)
+```
+
+2. Now you are going to play with the different output provided by the **PCA** function. To do so, you are going to perform a PCA, just like you did previously, with the argument _graph_ set to _FALSE_, then you are going to use the **plot.PCA** function on _res.pca_. Remember to have a look at the help page.
+
+```{r q32, exercise=TRUE}
+
+```
+
+<div id="q32-hint">
+Have a look at the argument `choix`, try to represent the individuals, then the variables.
+</div>
+
+****
+### With Principle Component Analysis and confidence ellipses
+
+For this very last section we're going to practice in the R environment. You are going to: install the _SensoMineR_ package, load the _SensoMineR_ package, load the _chocolates_ data with the **data** function, apply the **panellipse** function to the _sensochoc_ dataset. Remember to have a look at the help page.
+
+## Analysing the _hedochoc_ dataset from a product point of view
+
+****
+### From a univariate point of view with analysis of variance (ANOVA)
+
+Here, we want to understand the variability of the hedonic scores according to the product and to the panellist. In this experience, the statistical individual of interest is a _moment_ (in the sense period of time) where a chocolate is tasted by a panellist who is supposed to give a hedonic score. Therefore, this _moment_ is measured by three variables, the product effect, the panellist effect and finally the hedonic score. Use the **summary** function, and the **as.factor** function, in order to transform the dataset _hedo.anova_ into a dataset suitable for anova. Run the **AovSum** function with the proper model.
+
+
+```{r q41, exercise=TRUE}
+summary(hedo.anova)
+```
+
+<div id="q41-hint">
+It's the same thing as for a sensory descriptor.
+</div>
+
+****
+### From a multivariate point of view with PCA
+
+Have a look at the _hedochoc_ dataset. What do you think you could do? If you run a PCA, remember to set the argument _graph_ to _FALSE_.
+
+```{r q42, exercise=TRUE}
+
+```
+
+<div id="q42-hint">
+Have a look at the argument `choix`, try to represent the individuals, then the variables.
+</div>
+
+## Analysing the _hedochoc_ dataset from a panelist point of view
+
+****
+### First with PCA and the _hedochoc_ dataset
+
+```{r q43-setup, echo=FALSE}
+data(chocolates)
+```
+
+Before doing anything, have a look at 
+http://www.gastonsanchez.com/visually-enforced/how-to/2014/01/15/Center-data-in-R/
+What do you think you can do with that? If you have an idea, just try...
+
+```{r q43, exercise=TRUE}
+
+```
+
+****
+### Then with hierarchical clustering
+
+```{r q44-setup, echo=FALSE}
+data(chocolates)
+```
+
+Run the same code as the one you have obtained previously. Save the results of your PCA in an object, then perform the HCPC function on this object.
+
+```{r q44, exercise=TRUE}
+
+```

@@ -1,0 +1,577 @@
+---
+title: "Getting used to R - Introduction to survey data"
+output: 
+  learnr::tutorial:
+    progressive: true #permet de ne pas afficher toutes les sous-parties d'un coup (bouton "continue")
+    allow_skip: true #autorise l'user a sauter des sous-parties / exercices
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(dplyr)
+library(xlsx)
+library(FactoMineR)
+library(SensoMineR)
+library(ggplot2) 
+        
+tutorial_options(exercise.completion = FALSE) # autorise une fenêtre de suggestion à l'édition du code par l'user
+knitr::opts_chunk$set(error=TRUE) #l'option s'applique à tous les chunk
+```
+
+```{r data, include=FALSE}
+data_tea <- read.xlsx2("Lesson2_data/tea.xlsx", 1, colClasses = NA)
+#senso.average <- read.table("Lesson2_data/senso.average.txt", header=TRUE, sep="\t", na.strings="NA", dec=",", strip.white=TRUE,row.names=1)
+```
+
+# Analysing survey data
+
+## Introduction
+
+****
+
+The main objective of this tutorial is to allow you to manipulate some R code applied to the analysis of survey data.
+
+In this tutorial, you will experience what could be called a controlled environment. In this environment we hope that you will be able to learn R and the analysis of survey data without too many problems. 
+
+You will be asked (1) to answer to all the questions of this tutorial, (2) to save the code that you will generate, and of course (3) to comment this code, just in case you would forget what it means in a couple of days.
+
+Don't hesitate to use the hint button.
+
+## The tea dataset
+
+****
+
+This tutorial will be illustrated using a survey of 300 tea drinkers. The battery of questions they were asked are related with their tea-drinking behaviour, the image they have of the product, and finally a few descriptive questions.
+
+There are 19 questions relating to tea-drinking behaviour.
+
+- What kind of tea do you drink the most (black tea, green tea, flavoured tea)?
+
+- How do you take your tea (plain, with lemon, with milk, other)?
+
+- What kind of tea do you buy (tea bags, loose tea, both)?
+
+- Do you add sugar to your tea (yes, no)?
+
+- Where do you buy your tea (in the supermarket, in specialist shops, both)?
+
+- What kind of tea do you buy (cheapest, supermarket brand, well-known brand, luxury, it varies, I don't know)?
+
+- How often do you drink tea (more than twice a day, once a day, 3 to 6 times a week, once or twice per week)?
+
+- Six questions deal with the location in which the tea is drunk: Do you drink tea at home? Do you drink tea at work?
+Do you drink tea in tearooms or coffee shops? Do you drink tea at friends' houses? Do you drink tea in restaurants? Do you drink tea in bars? For each of these six questions, the participants were required to answer yes or no.
+
+- Six questions deal with the time of day when the tea is drunk: Do you drink tea at breakfast? Do you drink tea in the afternoon? Do you drink tea in the evening? Do you drink tea after lunch? Do you drink tea after dinner? Do you drink tea throughout the day?
+
+For each of these six questions, the participants were required to answer yes or no.
+
+Twelve questions were asked about the image of the product:
+
+- Do you consider tea to be exotic?
+
+- Do you associate tea with spirituality?
+
+- Is tea a healthy product?
+
+- Is tea a diuretic?
+
+- Do you associate tea with friendliness?
+
+- Does tea stop the body from absorbing iron?
+
+- Is tea feminine?
+
+- Is tea refined?
+
+- Will tea help you to lose weight?
+
+- Is tea a stimulant?
+
+- Is tea a relaxant?
+
+- Does tea have any effect on your overall health?
+
+For each of these 12 questions, the participants were required to answer yes or no.
+
+Four descriptive questions were also asked: gender, professional category (farmer, manual labourer, professional, senior management, employee, other profession, student, unemployed), age, and whether or not the participant regularly practised sports (yes or no).
+
+## Playing with the dataset
+
+Please notice that for this tutorial you really don't have answer the three first questions. You are in a controlled environment and everything has been downloaded for you, the datasets and the different packages you need (the packages have been installed as well).
+
+1. If you click on the following link, you will be able to download the dataset on your own computer. Please notice that for this tutorial you really don't have to do it. On the other hand if you want to try the code that you will generate during this tutorial in the R console, you will have to download it: [tea.xls](http://factominer.free.fr/bookV2/tea.csv).
+
+2. The first thing you have to think of is the different packages you might need, before beginning the analysis of your data. Keep in mind that the dataset is already downloaded on our server, so we will skip this step. Keep also in mind that the packages we're going to use are already installed on our server. In a real life situation you would have to import the dataset and to install and load the packages. To install, then load a package, you can refer to the code below.
+
+```{r q12, exercise = TRUE}
+install.packages("dplyr")
+install.packages("xlsx")
+install.packages("ggplot2")
+install.packages("FactoMineR")
+
+library(dplyr)
+library(xlsx)
+library(ggplot2)
+library(FactoMineR)
+```
+
+```{r q12-solution, echo=FALSE}
+install.packages("dplyr")
+install.packages("xlsx")
+install.packages("ggplot2")
+install.packages("FactoMineR")
+
+library(dplyr)
+library(xlsx)
+library(ggplot2)
+library(FactoMineR)
+```
+
+<div id="q12-hint">
+Before loading a package, you first have to install it. To do so, use the **install.packages** function, just like this `install.packages("name_package")`
+
+As you can see, all you have to do to load a package is to apply the **library** function to the package, just like this `library(name_package)`.
+</div>
+
+Thanks to the code above, you can load the four packages _dplyr_, _xlsx_, _ggplot2_, and _FactoMineR_.
+
+3. Now, we're going to show you how to import a dataset, although you don't have to do it within the framework of this tutorial. Let's import the dataset **tea.xlsx** in an R object that you will call **data_tea**. To do so, let's use the **read.xlsx2** function from the _xlsx_ package.
+
+```{r q13, exercise = TRUE}
+data_tea <- read.xlsx2("tea.xlsx", 1, colClasses = NA)
+```
+
+```{r q13-solution, echo=FALSE}
+read.xlsx2("tea.xlsx", 1, colClasses = NA)
+```
+
+<div id="q13-hint">
+In the code, we put the result of the **read.xlsx2** function in the R object that we have called `data_tea`.
+
+Just replace `file` by the name and location of your dataset `read.xlsx2("file", 1, colClasses = NA)`. In this example, the only thing that we have specified is the name of the dataset we wanted to import. You can do that when your working directory is properly set. To do so, you can use the **getwd** and the **setwd** functions. The first one will get your working directory, when the second one will set your working directory.
+</div>
+
+4. With the **summary** function, check that the dataset has been well imported (once again it's been properly done in this controlled environment, but you have to learn to do it systematically). Change the _maxsum_ argument of the **summary** function (to get some help, write `?summary`). As you can see, this argument indicates the number of levels to be displayed.
+
+```{r q14, exercise = TRUE}
+
+```
+
+```{r q14-solution, echo=FALSE}
+summary(data_tea)
+```
+
+5. Have a look at the _frequency_ variable with the **summary** function. Thanks to the **factor** function and the _levels_ argument of this function, we're going to reorder the _frequency_ variable. It will facilitate the interpretation of the graphical results. Check your code with the **summary** function.
+
+```{r q15, exercise=TRUE}
+    
+```
+
+```{r q15-solution, echo=FALSE}
+data_tea$frequency <- factor(data_tea$frequency, levels=c("1 to 2/week","3 to 6/week","1/day","more than 2/day"))
+```
+
+<div id="q15-hint">
+In the following code, you will find an example of how to use the `factor` variable:
+`ordered_levels <- c("level1", "level2", "level3", "level4")`
+`dataset$variable <- factor(dataset$variable, levels=ordered_levels)`
+</div>
+
+```{r q16-setup, echo=FALSE}
+data_tea$frequency <- factor(data_tea$frequency, levels=c("1 to 2/week","3 to 6/week","1/day","more than 2/day"))
+```
+
+6. Use the **recode** function of the _dplyr_ package in order to change the levels "F" to "Female" et "M" to "Male". Check your code with the **summary** function.
+
+```{r q16, exercise = TRUE}
+
+```
+
+```{r q16-solution}
+data_tea$sex <- recode(data_tea$sex, "F"= "Female", "M"= "Male")
+```
+
+```{r q17-setup, echo=FALSE}
+data_tea$frequency <- factor(data_tea$frequency, levels=c("1 to 2/week","3 to 6/week","1/day","more than 2/day"))
+data_tea$sex <- recode(data_tea$sex, "F"= "Female", "M"= "Male")
+```
+
+7. Use the **mutate** function of the _dplyr_ package in order to create a new categorical variable called _AgeCategorical_. To do so, transform the variable _age_ into a categorical variable with 4 levels: "Less than 25", "[25 ; 40[", "[40 ; 60[", and "More than 60". Reorder the levels in a convenient way. Check your code with the **summary** function.
+
+```{r q17, exercise = TRUE}
+
+```
+
+```{r q17-solution, echo=FALSE}
+data_tea <- mutate(data_tea, AgeCategorical = as.factor(ifelse(age<25, "Less than 25", ifelse(age<40, "[25 ; 40[", ifelse(age<60, "[40 ; 60[", "60 and more")))))
+```
+
+<div id="q17-hint">
+To transform a continuous variable into a categorical variable, you can use the following code:
+`dataset <- mutate(dataset, varCategorical = as.factor(ifelse(varContinuous<x, 
+"Less than x", ifelse(varContinuous<y, "[x ; y[", 
+ifelse(varContinuous<z, "[y ; z[", "More than z")))))`
+</div>
+
+```{r q18-setup, echo=FALSE}
+data_tea$frequency <- factor(data_tea$frequency, levels=c("1 to 2/week","3 to 6/week","1/day","more than 2/day"))
+data_tea$sex <- recode(data_tea$sex, "F"= "Female", "M"= "Male")
+data_tea <- mutate(data_tea, AgeCategorical = as.factor(ifelse(age<25, "Less than 25", ifelse(age<40, "[25 ; 40[", ifelse(age<60, "[40 ; 60[", "60 and more")))))
+data_tea$AgeCategorical <- factor(data_tea$AgeCategorical, levels=c("Less than 25", "[25 ; 40[", "[40 ; 60[", "60 and more"))
+```
+
+8. Use the **recode** function of the _dplyr_ package to merge the two levels "25-34" and "35-44" of the variable _age_Q_.
+
+```{r q18, exercise=TRUE}
+
+```
+
+```{r q18-solution, echo=FALSE}
+data_tea$age_Q <- recode(data_tea$age_Q, "25-34" = "25-44")
+data_tea$age_Q <- recode(data_tea$age_Q, "35-44" = "25-44")
+```
+
+<div id="q18-hint">
+In the following code, you will find an example of how to use the `recode` variable:
+`dataset$variable <- recode(dataset$variable, "level_old" = "level_new")`
+</div>
+
+## Basic graphical representation
+
+### Using R
+
+```{r q21-setup, echo=FALSE}
+data_tea$frequency <- factor(data_tea$frequency, levels=c("1 to 2/week","3 to 6/week","1/day","more than 2/day"))
+data_tea$sex <- recode(data_tea$sex, "F"= "Female", "M"= "Male")
+data_tea <- mutate(data_tea, AgeCategorical = as.factor(ifelse(age<25, "Less than 25", ifelse(age<40, "[25 ; 40[", ifelse(age<60, "[40 ; 60[", "60 and more")))))
+data_tea$AgeCategorical <- factor(data_tea$AgeCategorical, levels=c("Less than 25", "[25 ; 40[", "[40 ; 60[", "60 and more"))
+data_tea$age_Q <- recode(data_tea$age_Q, "25-34" = "25-44")
+data_tea$age_Q <- recode(data_tea$age_Q, "35-44" = "25-44")
+```
+
+
+1. Use the **barplot** function to represent the variable _type_ with a bar plot. Play with the arguments _cex.names_, _las_, and _horiz_.
+
+```{r q21, exercise=TRUE}
+
+```
+
+```{r q21-solution, echo=FALSE}
+barplot(table(select(data_tea, type)), cex.names=0.7, las=1, horiz=T)
+```
+
+<div id="q21-hint">
+To do so, use the **select** function first, then the **table** function in order to produce the input you need to produce your graphical output:
+`barplot(right_input, cex.names=0.7, las=1, horiz=T)`
+</div>
+
+2. Use the **pie** function to represent the variable _type_ with a pie chart.
+
+```{r q22-setup, echo=FALSE}
+data_tea$frequency <- factor(data_tea$frequency, levels=c("1 to 2/week","3 to 6/week","1/day","more than 2/day"))
+data_tea$sex <- recode(data_tea$sex, "F"= "Female", "M"= "Male")
+data_tea <- mutate(data_tea, AgeCategorical = as.factor(ifelse(age<25, "Less than 25", ifelse(age<40, "[25 ; 40[", ifelse(age<60, "[40 ; 60[", "60 and more")))))
+data_tea$AgeCategorical <- factor(data_tea$AgeCategorical, levels=c("Less than 25", "[25 ; 40[", "[40 ; 60[", "60 and more"))
+data_tea$age_Q <- recode(data_tea$age_Q, "25-34" = "25-44")
+data_tea$age_Q <- recode(data_tea$age_Q, "35-44" = "25-44")
+```
+
+
+```{r q22, exercise=TRUE}
+
+```
+
+```{r q22-solution, echo=FALSE}
+pie(table(select(data_tea, type)), cex=0.7)
+```
+
+<div id="q22-hint">
+To do so, use the **select** function first, then the **table** function in order to produce the input you need to produce your graphical output:
+`pie(right_input, cex.names=0.7)`
+</div>
+
+3. Representation of the continuous variable _age_ using a histogram and a box-and-whisker plot.
+
+```{r q23-setup, echo=FALSE}
+data_tea$frequency <- factor(data_tea$frequency, levels=c("1 to 2/week","3 to 6/week","1/day","more than 2/day"))
+data_tea$sex <- recode(data_tea$sex, "F"= "Female", "M"= "Male")
+data_tea <- mutate(data_tea, AgeCategorical = as.factor(ifelse(age<25, "Less than 25", ifelse(age<40, "[25 ; 40[", ifelse(age<60, "[40 ; 60[", "60 and more")))))
+data_tea$AgeCategorical <- factor(data_tea$AgeCategorical, levels=c("Less than 25", "[25 ; 40[", "[40 ; 60[", "60 and more"))
+data_tea$age_Q <- recode(data_tea$age_Q, "25-34" = "25-44")
+data_tea$age_Q <- recode(data_tea$age_Q, "35-44" = "25-44")
+```
+
+
+```{r q23, exercise=TRUE}
+
+```
+
+```{r q23-solution, echo=FALSE}
+hist(data_tea$age, main="Histogram of age")
+boxplot(data_tea$age, main=" Boxplot of age")
+```
+
+<div id="q23-hint">
+To do so you can use the variables `hist` and `boxplot`.
+</div>
+
+****
+
+### Using ggplot2
+
+Now, we're going to use the _ggplot2_ package to represent the data. This package is very useful for producing nice graphical outputs but it may be more complicated at the beginning. 
+
+You will see that the code is divided into three parts:
+(1) **ggplot** : definition of the axes; 
+(2) **geom_bar ; geom_boxplot ; geom_point ; geom_histogram** : draw the graphical output; 
+(3) **geom_text** : definition of the labels;
+
+1. Use the _ggplot2_ package to represent the variable **type** with a bar plot. To do so, use the function **table** to count the number of occurrences, then transform the table you have obtained into a data frame with the **as.data.frame** function. Then replace the name of the columns and change them into _Type_ and _Frequency_. To do so, you will use the **names** function. Finally, use the three functions **ggplot**, **geom_bar** and **geom_text**.
+
+```{r q24-setup, echo=FALSE}
+data_tea$frequency <- factor(data_tea$frequency, levels=c("1 to 2/week","3 to 6/week","1/day","more than 2/day"))
+data_tea$sex <- recode(data_tea$sex, "F"= "Female", "M"= "Male")
+data_tea <- mutate(data_tea, AgeCategorical = as.factor(ifelse(age<25, "Less than 25", ifelse(age<40, "[25 ; 40[", ifelse(age<60, "[40 ; 60[", "60 and more")))))
+data_tea$AgeCategorical <- factor(data_tea$AgeCategorical, levels=c("Less than 25", "[25 ; 40[", "[40 ; 60[", "60 and more"))
+data_tea$age_Q <- recode(data_tea$age_Q, "25-34" = "25-44")
+data_tea$age_Q <- recode(data_tea$age_Q, "35-44" = "25-44")
+```
+
+```{r q24, exercise=TRUE}
+type <- as.data.frame(table(select(data_tea, type)))
+names(type) <- c("Type","Frequency")
+ggplot(data=type, aes(x=Type,y=Frequency))+
+  geom_bar(stat="identity", fill="steelblue")+ 
+  geom_text(aes(label=Frequency), vjust=1.6, color="white",size=3.5)
+```
+
+```{r q24-solution, echo=FALSE}
+type <- as.data.frame(table(select(data_tea, type)))
+names(type) <- c("Type","Frequency")
+ggplot(data=type, aes(x=Type,y=Frequency))+
+  geom_bar(stat="identity", fill="steelblue")+ 
+  geom_text(aes(label=Frequency), vjust=1.6, color="white",size=3.5)
+```
+
+<div id="q24-hint">
+`type <- as.data.frame(table(select(data_tea, type)))`
+`names(type) <- c("Type","Frequency")`
+
+At this stage, you can have a look at the dataset _type_ (write the name of the dataset in the console or use the **summary** function). It will help you understanding the following code.
+
+`ggplot(data=type, aes(x=Type,y=Frequency))+`
+  `geom_bar(stat="identity", fill="steelblue")+` 
+  `geom_text(aes(label=Frequency), vjust=1.6, color="white",size=3.5)`
+</div>
+
+Now, you can do exactly the same type of representation with the variable _frequency_.
+
+```{r q25-setup, echo=FALSE}
+data_tea$frequency <- factor(data_tea$frequency, levels=c("1 to 2/week","3 to 6/week","1/day","more than 2/day"))
+data_tea$sex <- recode(data_tea$sex, "F"= "Female", "M"= "Male")
+data_tea <- mutate(data_tea, AgeCategorical = as.factor(ifelse(age<25, "Less than 25", ifelse(age<40, "[25 ; 40[", ifelse(age<60, "[40 ; 60[", "60 and more")))))
+data_tea$AgeCategorical <- factor(data_tea$AgeCategorical, levels=c("Less than 25", "[25 ; 40[", "[40 ; 60[", "60 and more"))
+data_tea$age_Q <- recode(data_tea$age_Q, "25-34" = "25-44")
+data_tea$age_Q <- recode(data_tea$age_Q, "35-44" = "25-44")
+```
+
+```{r q25, exercise=TRUE}
+
+```
+
+2. Now we're going to see how to get a pie chart. Please, represent the variable **type** using a pie chart. To do so, you're going to proceed similarly as in question 1.
+
+```{r q26-setup, echo=FALSE}
+data_tea$frequency <- factor(data_tea$frequency, levels=c("1 to 2/week","3 to 6/week","1/day","more than 2/day"))
+data_tea$sex <- recode(data_tea$sex, "F"= "Female", "M"= "Male")
+data_tea <- mutate(data_tea, AgeCategorical = as.factor(ifelse(age<25, "Less than 25", ifelse(age<40, "[25 ; 40[", ifelse(age<60, "[40 ; 60[", "60 and more")))))
+data_tea$AgeCategorical <- factor(data_tea$AgeCategorical, levels=c("Less than 25", "[25 ; 40[", "[40 ; 60[", "60 and more"))
+data_tea$age_Q <- recode(data_tea$age_Q, "25-34" = "25-44")
+data_tea$age_Q <- recode(data_tea$age_Q, "35-44" = "25-44")
+```
+
+```{r q26, exercise=TRUE}
+type <- as.data.frame(table(select(data_tea, type)))
+names(type) <- c("Type", "Frequency")
+ggplot(type, aes(x="", y=Frequency, fill=Type))+
+  geom_bar(width=1, stat="identity")+
+  coord_polar("y", star=0)+
+  theme_minimal()
+```
+
+
+```{r q26-solution, echo=FALSE}
+type <- as.data.frame(table(select(data_tea, type)))
+names(type) <- c("Type", "Frequency")
+ggplot(type, aes(x="", y=Frequency, fill=Type))+
+  geom_bar(width=1, stat="identity")+
+  coord_polar("y", star=0)+
+  theme_minimal()
+```
+
+Now, you can do exactly the same type of representation with the variable _frequency_.
+
+```{r q27-setup, echo=FALSE}
+data_tea$frequency <- factor(data_tea$frequency, levels=c("1 to 2/week","3 to 6/week","1/day","more than 2/day"))
+data_tea$sex <- recode(data_tea$sex, "F"= "Female", "M"= "Male")
+data_tea <- mutate(data_tea, AgeCategorical = as.factor(ifelse(age<25, "Less than 25", ifelse(age<40, "[25 ; 40[", ifelse(age<60, "[40 ; 60[", "60 and more")))))
+data_tea$AgeCategorical <- factor(data_tea$AgeCategorical, levels=c("Less than 25", "[25 ; 40[", "[40 ; 60[", "60 and more"))
+data_tea$age_Q <- recode(data_tea$age_Q, "25-34" = "25-44")
+data_tea$age_Q <- recode(data_tea$age_Q, "35-44" = "25-44")
+```
+
+```{r q27, exercise=TRUE}
+
+```
+
+3. Now, we're going to see how to get an histogram. This kind of graphical representation is designed for continuous variable. Let's represent the variable _age_ with an histogram.
+
+```{r q28-setup, echo=FALSE}
+data_tea$frequency <- factor(data_tea$frequency, levels=c("1 to 2/week","3 to 6/week","1/day","more than 2/day"))
+data_tea$sex <- recode(data_tea$sex, "F"= "Female", "M"= "Male")
+data_tea <- mutate(data_tea, AgeCategorical = as.factor(ifelse(age<25, "Less than 25", ifelse(age<40, "[25 ; 40[", ifelse(age<60, "[40 ; 60[", "60 and more")))))
+data_tea$AgeCategorical <- factor(data_tea$AgeCategorical, levels=c("Less than 25", "[25 ; 40[", "[40 ; 60[", "60 and more"))
+data_tea$age_Q <- recode(data_tea$age_Q, "25-34" = "25-44")
+data_tea$age_Q <- recode(data_tea$age_Q, "35-44" = "25-44")
+```
+
+```{r q28, exercise=TRUE}
+
+```
+
+## Statistical analysis
+
+In this section, we will study the notion of dependence or independence between two categorical variables. The variables that we're going to study are _place.of.purchase_ and _type_. Actually we are first going to transform _type_ into another variable named _type.merged_, where the categories _cheapest_, _shop.brand_, and _unknown_ are merged into _cheapest_.
+
+```{r q31-setup, echo=FALSE}
+data_tea$frequency <- factor(data_tea$frequency, levels=c("1 to 2/week","3 to 6/week","1/day","more than 2/day"))
+data_tea$sex <- recode(data_tea$sex, "F"= "Female", "M"= "Male")
+data_tea <- mutate(data_tea, AgeCategorical = as.factor(ifelse(age<25, "Less than 25", ifelse(age<40, "[25 ; 40[", ifelse(age<60, "[40 ; 60[", "60 and more")))))
+data_tea$AgeCategorical <- factor(data_tea$AgeCategorical, levels=c("Less than 25", "[25 ; 40[", "[40 ; 60[", "60 and more"))
+data_tea$age_Q <- recode(data_tea$age_Q, "25-34" = "25-44")
+data_tea$age_Q <- recode(data_tea$age_Q, "35-44" = "25-44")
+data_tea$type.merged <- recode(data_tea$type, "shop.brand" = "cheapest")
+data_tea$type.merged <- recode(data_tea$type.merged, "unknown" = "cheapest")
+observed <- table(select(data_tea, place.of.purchase, type.merged))
+```
+
+### Contingency table: the Chi-square test
+
+In order to study the dependence between our two categorical variables, we have to build a contingency table. This type of table gathers the information we need to study the notion of independency between two categorical variables.
+
+1. Use the two functions **table** and **select** to build a contingency table crossing the modalities of the variables _place.of.purchase_ on the one hand, _type.merged_ on the other hand. You will save the results in an object named _observed_. Have a look ate the table _observed_ you've just created.
+
+```{r q31, exercise=TRUE}
+
+```
+
+```{r q31-solution, echo=FALSE}
+observed <- table(select(data_tea, place.of.purchase, type.merged))
+```
+
+<div id="q31-hint">
+`observed <- table(select(name_dataset, var1, var2))`
+</div>
+
+```{r q32-setup, echo=FALSE}
+data_tea$frequency <- factor(data_tea$frequency, levels=c("1 to 2/week","3 to 6/week","1/day","more than 2/day"))
+data_tea$sex <- recode(data_tea$sex, "F"= "Female", "M"= "Male")
+data_tea <- mutate(data_tea, AgeCategorical = as.factor(ifelse(age<25, "Less than 25", ifelse(age<40, "[25 ; 40[", ifelse(age<60, "[40 ; 60[", "60 and more")))))
+data_tea$AgeCategorical <- factor(data_tea$AgeCategorical, levels=c("Less than 25", "[25 ; 40[", "[40 ; 60[", "60 and more"))
+data_tea$age_Q <- recode(data_tea$age_Q, "25-34" = "25-44")
+data_tea$age_Q <- recode(data_tea$age_Q, "35-44" = "25-44")
+data_tea$type.merged <- recode(data_tea$type, "shop.brand" = "cheapest")
+data_tea$type.merged <- recode(data_tea$type.merged, "unknown" = "cheapest")
+observed <- table(select(data_tea, place.of.purchase, type.merged))
+```
+
+2. Now, we are going to apply the ${\chi}^2$ test of independence. We are confronted to the two following hypotheses: 
+
+$H_0$ : the two variables _place.of.purchase_ and _type.merged_ are independent
+
+$H_1$ : the two variables _place.of.purchase_ and _type.merged_ are not independent
+
+Under the null hypothesis, $H_0$, the chi-squared statistic _D_ follows a ${\chi}^2_{(I-1)(J-1)}$ distribution, where $I$ (resp. $J$) is the number of categories for the variable _place.of.purchase_ (resp. _type.merged_).
+
+By using the **chisq.test** function, assess the hypothesis of independence between the  variables _place.of.purchase_ and _type.merged_. Comment the results that you will store in an object named _res.chisq_. To do so, you will apply the **names** function to the object _res.chisq_.
+
+```{r q32, exercise=TRUE}
+
+```
+
+```{r q32-solution, echo=FALSE}
+res.chisq <- chisq.test(data_tea$place.of.purchase,data_tea$type.merged)
+names(res.chisq)
+```
+
+<div id="q32-hint">
+Don't forget that if you need help about some function all you need is to write `?name_function`.
+</div>
+
+```{r q33-setup, echo=FALSE}
+data_tea$frequency <- factor(data_tea$frequency, levels=c("1 to 2/week","3 to 6/week","1/day","more than 2/day"))
+data_tea$sex <- recode(data_tea$sex, "F"= "Female", "M"= "Male")
+data_tea <- mutate(data_tea, AgeCategorical = as.factor(ifelse(age<25, "Less than 25", ifelse(age<40, "[25 ; 40[", ifelse(age<60, "[40 ; 60[", "60 and more")))))
+data_tea$AgeCategorical <- factor(data_tea$AgeCategorical, levels=c("Less than 25", "[25 ; 40[", "[40 ; 60[", "60 and more"))
+data_tea$age_Q <- recode(data_tea$age_Q, "25-34" = "25-44")
+data_tea$age_Q <- recode(data_tea$age_Q, "35-44" = "25-44")
+data_tea$type.merged <- recode(data_tea$type, "shop.brand" = "cheapest")
+data_tea$type.merged <- recode(data_tea$type.merged, "unknown" = "cheapest")
+observed <- table(select(data_tea, place.of.purchase, type.merged))
+```
+
+****
+
+### Contingency table: Correpondence Analysis
+
+In this section, we are going to study the dependence between the two variables _place.of.purchase_ and _type.merged_, from a graphical point of view, at the level of the categories (and not at a variable level).
+
+To do so, we are going to use the **CA** function of the _FactoMineR_ package. You are going to apply this function to the _observed_ table ; then save the results in an object named _res.ca_.
+
+Play with the arguments of the **plot.CA** function of the _FactoMineR_ package to represent the columns.
+
+Play with the arguments of the **plot.CA** function of the _FactoMineR_ package to represent the rows.
+
+With the **dimdesc** function of the _FactoMineR_ package, describe the two first dimensions obtained by correspondence analysis.
+
+```{r q33, exercise=TRUE}
+CA(observed)
+
+```
+
+<div id="q33-hint">
+In the `plot.CA` function, there's a very important argument called _invisible_. It indicates which points should be represented.
+
+Be careful with the `dimdesc` function as by default it provides an automatic description of the 3 first dimensions. In this example, you only have two dimensions, so you have to change the argument `axes` by default.
+</div>
+
+****
+
+### The raw dataset : Multiple Correspondence Analysis
+
+```{r q34-setup, echo=FALSE}
+data_tea$frequency <- factor(data_tea$frequency, levels=c("1 to 2/week","3 to 6/week","1/day","more than 2/day"))
+data_tea$sex <- recode(data_tea$sex, "F"= "Female", "M"= "Male")
+data_tea <- mutate(data_tea, AgeCategorical = as.factor(ifelse(age<25, "Less than 25", ifelse(age<40, "[25 ; 40[", ifelse(age<60, "[40 ; 60[", "60 and more")))))
+data_tea$AgeCategorical <- factor(data_tea$AgeCategorical, levels=c("Less than 25", "[25 ; 40[", "[40 ; 60[", "60 and more"))
+data_tea$age_Q <- recode(data_tea$age_Q, "25-34" = "25-44")
+data_tea$age_Q <- recode(data_tea$age_Q, "35-44" = "25-44")
+data_tea$type.merged <- recode(data_tea$type, "shop.brand" = "cheapest")
+data_tea$type.merged <- recode(data_tea$type.merged, "unknown" = "cheapest")
+observed <- table(select(data_tea, place.of.purchase, type.merged))
+```
+
+In this section we will combine several variables at the same time. The first question you have to answer to is which variables should I use to get a multivariate description of my inidviduals. This description will induce some kind of distance between your individuals, this distance should answer to your research question: I want to understand my consumers according to their usage and attitude regarding tea, or according to their perception of the product. In the first situation, you will have to consider variables such as _breakfast_, _afternoon.tea_,..., _place.of.purchase_, _type_. In the second situation, you will have to consider variables such as _exotic_, _spirituality_, _relaxant_...Now, perform a multivariate analysis of the questionnaire with the **MCA** function of the _FactoMineR_ package. You have to choose properly the so-called active variables, as well as the illustrative variables. Save the results in an object named _res.mca_. Use the **HCPC** function to cluster your individuals; save the results in an object named _res.hcpc_. Use the **names** function to identify the components of _res.hcpc_. Describe the groups.
+
+```{r q34, exercise=TRUE}
+
+```
+
+<div id="q34-hint">
+Remember to have a look at the help page by typing `?MCA`. Notice that you have to identify the position of the illustrative variables to perform the analysis.
+</div>
+
+
+
