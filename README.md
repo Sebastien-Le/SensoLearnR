@@ -23,5 +23,6 @@ Once everything installed, just run
 ``` r
 library(learnr)
 library(SensoLearnR)
+available_tutorials(SensoLearnR)
 ```
 
