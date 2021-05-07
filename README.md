@@ -17,3 +17,11 @@ with:
 install.packages("devtools")
 devtools::install_github("Sebastien-Le/SensoLearnR")
 ```
+You also need to install the `learnr` package.
+Once everything installed, just run
+
+``` r
+library(learnr)
+library(SensoLearnR)
+```
+
