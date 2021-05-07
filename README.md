@@ -24,5 +24,6 @@ Once everything installed, just run
 library(learnr)
 library(SensoLearnR)
 available_tutorials(SensoLearnR)
+run_tutorial("Lesson1","SensoLearnR")
 ```
 
